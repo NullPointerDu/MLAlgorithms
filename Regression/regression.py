@@ -1,13 +1,45 @@
 import numpy as np
-from Regression.exceptions import *
+from algorithms.linalg import lstsq
+from abc import ABC, abstractmethod
 
 
-class LinearRegression:
+class IncorrectObjectException(Exception):
+    pass
+
+
+class NoDataException(Exception):
+    pass
+
+
+class DtypeIsNotNumeric(Exception):
+    pass
+
+
+class IncorrectMatrixShape(Exception):
+    pass
+
+
+class Regression(ABC):
+    @abstractmethod
+    def __init__(self):
+        pass
+
+    @abstractmethod
+    def fit(self, x, y):
+        pass
+
+    @abstractmethod
+    def estimate(self, x):
+        pass
+
+
+class LinearRegression(Regression):
     def __init__(self, intercept=True):
         """
         Initialize LinearRegression model.
         :param intercept: If fitting with intercept.
         """
+        super().__init__()
         self.__intercept = intercept
         self.__x = None
         self.__y = None
@@ -31,7 +63,7 @@ class LinearRegression:
         else:
             self.__x = x
         self.__y = y
-        weight = np.linalg.inv(self.__x.T.dot(self.__x)).dot(self.__x.T).dot(self.__y)
+        weight = lstsq(self.__x, self.__y)
         self.weight = weight
         return self.weight
 
@@ -70,6 +102,7 @@ class LinearRegression:
         return estimate
 
 
+
 if __name__ == "__main__":
     from sklearn.datasets import make_regression
     from matplotlib import pyplot as plt
@@ -78,6 +111,9 @@ if __name__ == "__main__":
     # generate regression dataset
     X, y = make_regression(n_samples=7, n_features=1, noise=15)
     w = LinearRegression().fit(X, y)
+    # print(w)
+    # exit(0)
+
     # plot regression dataset
     ax = plt.gca()
     plt.title("figure 1.1")
@@ -89,7 +125,6 @@ if __name__ == "__main__":
     # draw regression line
     xmin, xmax = ax.get_xbound()
     l = draw_line([xmin, w[0]+w[1]*xmin], [xmax, w[0]+w[1]*xmax], color='c')
-
 
     # draw error
     print(X, y)
